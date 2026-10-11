@@ -126,26 +126,25 @@ export const StandbyScreen: React.FC<StandbyScreenProps> = ({
         <div className="mt-2 md:mt-0">SEDS REC SPACE OPERATIONS • MISSION CONTROL</div>
       </div>
 
-      {/* Launch Confirmation Dialog */}
+      {/* Mission Start Confirmation Dialog */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#05050A]/85 backdrop-blur-lg pointer-events-auto">
           <div className="max-w-md w-full p-6 rounded-2xl bg-[#100B20] border border-[#A78BFA]/40 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center space-x-3 text-[#A78BFA]">
               <ShieldAlert className="w-6 h-6 text-[#6DADEB]" />
               <h3 className="text-lg font-mono font-bold tracking-wide uppercase text-[#F3F2FA]">
-                CONFIRM LAUNCH INITIATION
+                CONFIRM MISSION START
               </h3>
             </div>
 
             <p className="text-sm text-[#8D8BA0] font-sans leading-relaxed">
-              Initiating the mission triggers the multi-stage cinematic rocket launch sequence.
-              The authoritative <span className="text-[#F3F2FA] font-mono font-medium">24-hour hackathon countdown</span> will start immediately upon orbital insertion.
+              Initiating the mission will immediately start the authoritative <span className="text-[#F3F2FA] font-mono font-medium">24-hour hackathon countdown</span> and synchronized lunar orbital timeline.
             </p>
 
             <div className="p-3 rounded-lg bg-[#05050A]/60 border border-[#A78BFA]/20 text-xs font-mono text-[#C4B5FD] space-y-1">
-              <div>• Sequence duration: ~12 seconds</div>
-              <div>• Skip option available in flight overlay</div>
-              <div>• Live telemetry will activate across all systems</div>
+              <div>• Clock starts immediately at 24:00:00</div>
+              <div>• Moon begins real-time synchronized orbit</div>
+              <div>• Flight operations HUD becomes active</div>
             </div>
 
             <div className="flex items-center justify-end space-x-3 pt-2">
@@ -162,7 +161,7 @@ export const StandbyScreen: React.FC<StandbyScreenProps> = ({
                 }}
                 className="px-5 py-2.5 rounded-lg bg-[#A78BFA] hover:bg-[#C4B5FD] text-[#05050A] text-xs font-mono font-bold tracking-wider transition-all cursor-pointer shadow-[0_0_20px_rgba(167,139,250,0.4)]"
               >
-                PROCEED TO LAUNCH
+                START MISSION NOW
               </button>
             </div>
           </div>

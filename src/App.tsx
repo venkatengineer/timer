@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import { SpaceScene } from './components/3d/SpaceScene'
 import { StandbyScreen } from './components/ui/StandbyScreen'
-import { LaunchOverlay } from './components/ui/LaunchOverlay'
 import { MissionHeader } from './components/ui/MissionHeader'
 import { MissionCockpit } from './components/ui/MissionCockpit'
 import { FinalMinuteOverlay } from './components/ui/FinalMinuteOverlay'
@@ -26,7 +25,7 @@ const DEFAULT_CONFIG: MissionConfig = {
   orbitalRadius: DEFAULT_ORBITAL_RADIUS,
   orbitalInclination: DEFAULT_ORBITAL_INCLINATION,
   soundEnabled: true,
-  skipLaunchSequence: false,
+  skipLaunchSequence: true,
   reducedMotion: false,
   visualQuality: 'high',
 }
@@ -36,7 +35,6 @@ const AUTH_STORAGE_KEY = 'seds_lunar_clock_auth_state_v1'
 export const App: React.FC = () => {
   const [config, setConfig] = useState<MissionConfig>(DEFAULT_CONFIG)
   const [isOrganizerOpen, setIsOrganizerOpen] = useState(false)
-  const [launchProgress, setLaunchProgress] = useState(0)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     try {
       return localStorage.getItem(AUTH_STORAGE_KEY) === 'granted'
@@ -57,29 +55,17 @@ export const App: React.FC = () => {
     addTime,
     subtractTime,
     resetMission,
-    setLaunchStatus,
     scrubFraction,
     clearActiveMilestone,
     phases,
   } = useMissionTimer(config)
 
-  // Launch Sequence Handlers
+  // Direct Mission Start Handler (No launch sequence delay)
   const handleInitiateMission = useCallback(() => {
     sounds.initAudio()
-    if (config.skipLaunchSequence) {
-      startMission()
-    } else {
-      setLaunchStatus()
-    }
-  }, [config.skipLaunchSequence, sounds, startMission, setLaunchStatus])
-
-  const handleLaunchComplete = useCallback(() => {
+    sounds.playMissionActive()
     startMission()
-  }, [startMission])
-
-  const handleLaunchSkip = useCallback(() => {
-    startMission()
-  }, [startMission])
+  }, [sounds, startMission])
 
   const handleTogglePause = useCallback(() => {
     if (timerState.status === 'active') {
@@ -107,14 +93,18 @@ export const App: React.FC = () => {
     setIsAuthenticated(true)
     try {
       localStorage.setItem(AUTH_STORAGE_KEY, 'granted')
-    } catch {}
+    } catch {
+      // storage unavailable
+    }
   }, [])
 
   const handleLogout = useCallback(() => {
     setIsAuthenticated(false)
     try {
       localStorage.removeItem(AUTH_STORAGE_KEY)
-    } catch {}
+    } catch {
+      // storage unavailable
+    }
   }, [])
 
   // Keyboard shortcuts (O, M, Space, F)
@@ -135,14 +125,13 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* 3D Celestial WebGL Canvas: Earth, Moon on Orbit, Stars, Rocket */}
+      {/* 3D Celestial WebGL Canvas: Earth, Moon on Orbit, Stars */}
       <SpaceScene
         status={timerState.status}
         orbitalAngle={timerState.orbitalAngle}
         elapsedFraction={timerState.elapsedFraction}
         orbitalRadius={config.orbitalRadius}
         orbitalInclination={config.orbitalInclination}
-        launchProgress={launchProgress}
         isFinalMinute={timerState.isFinalMinute}
         reducedMotion={config.reducedMotion}
       />
@@ -154,16 +143,6 @@ export const App: React.FC = () => {
           onInitiateMission={handleInitiateMission}
           onOpenOrganizer={() => setIsOrganizerOpen(true)}
           onLogout={handleLogout}
-        />
-      )}
-
-      {/* EXPERIENCE B: Cinematic Rocket Launch Sequence */}
-      {timerState.status === 'launching' && (
-        <LaunchOverlay
-          onComplete={handleLaunchComplete}
-          onSkip={handleLaunchSkip}
-          onProgressUpdate={setLaunchProgress}
-          sounds={sounds}
         />
       )}
 
@@ -182,7 +161,7 @@ export const App: React.FC = () => {
             onLogout={handleLogout}
           />
 
-          {/* Clean, Non-overlapping Bottom Flight Operations Cockpit */}
+          {/* Integrated Cinematic HUD floating in deep space negative space */}
           <MissionCockpit
             timerState={timerState}
             phases={phases}
