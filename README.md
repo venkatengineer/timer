@@ -52,6 +52,7 @@ The central metaphor connects the orbital revolution of the Moon to the 24-hour 
 
 ## ⌨️ Operator Keyboard Shortcuts
 
+- `Ctrl + A` (or `Cmd + A`): **Manual Timer Window** (Set Custom Countdown & Launch Immediately)
 - `O`: Open / Close Organizer Mission Controls
 - `M`: Toggle Audio Mute / Unmute
 - `Space`: Quick Toggle Pause / Resume

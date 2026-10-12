@@ -7,6 +7,7 @@ interface StandbyScreenProps {
   config: MissionConfig
   onInitiateMission: () => void
   onOpenOrganizer: () => void
+  onOpenManualTimer?: () => void
   onLogout?: () => void
 }
 
@@ -14,6 +15,7 @@ export const StandbyScreen: React.FC<StandbyScreenProps> = ({
   config,
   onInitiateMission,
   onOpenOrganizer,
+  onOpenManualTimer,
   onLogout,
 }) => {
   const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -31,6 +33,19 @@ export const StandbyScreen: React.FC<StandbyScreenProps> = ({
         </div>
 
         <div className="flex items-center space-x-2">
+          {/* Custom Timer [Ctrl+A] Button */}
+          {onOpenManualTimer && (
+            <button
+              onClick={onOpenManualTimer}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-md bg-[#100B20]/80 border border-[#A78BFA]/40 hover:border-[#A78BFA] text-[#C4B5FD] text-xs font-mono transition-all backdrop-blur-md cursor-pointer"
+              title="Set Custom Timer [Ctrl+A]"
+            >
+              <Clock className="w-3.5 h-3.5 text-[#6DADEB]" />
+              <span className="hidden sm:inline">SET TIMER</span>
+              <span className="text-[10px] bg-[#A78BFA]/20 px-1 py-0.2 rounded text-[#A78BFA]">^A</span>
+            </button>
+          )}
+
           {/* Refresh Button */}
           <button
             onClick={() => window.location.reload()}

@@ -164,8 +164,10 @@ export function useMissionTimer(config: MissionConfig) {
     const elapsedMs = Math.max(0, effectiveNow - startTimestamp - accumulatedPausedMs)
     const elapSec = elapsedMs / 1000
 
-    const frac = calculateElapsedFraction(elapSec, config.totalDurationSeconds)
-    const remSec = Math.max(0, config.totalDurationSeconds - elapSec)
+    // Authoritative remaining time derived from deadlineTimestamp
+    const remSec = Math.max(0, (deadlineTimestamp - effectiveNow) / 1000)
+    const totalMissionSec = Math.max(1, (deadlineTimestamp - startTimestamp - accumulatedPausedMs) / 1000)
+    const frac = calculateElapsedFraction(elapSec, totalMissionSec)
 
     setElapsedSeconds(elapSec)
     setRemainingSeconds(remSec)
@@ -331,6 +333,32 @@ export function useMissionTimer(config: MissionConfig) {
     }
   }, [])
 
+  const setManualTimer = useCallback(
+    (seconds: number, playImmediately: boolean = true) => {
+      const validSeconds = Math.max(1, Math.round(seconds))
+      const now = Date.now()
+      const deadline = now + validSeconds * 1000
+
+      setStartTimestamp(now)
+      setDeadlineTimestamp(deadline)
+      setAccumulatedPausedMs(0)
+      setLastPauseTimestamp(playImmediately ? null : now)
+      setElapsedSeconds(0)
+      setRemainingSeconds(validSeconds)
+      setElapsedFraction(0)
+      setOrbitalAngle(calculateOrbitalAngle(0, config.initialOrbitalAngle))
+      setIsFinalMinute(validSeconds <= 60 && validSeconds > 0)
+      setIsFinalTenSeconds(validSeconds <= 10 && validSeconds > 0)
+      setFinalCountdownDigit(validSeconds <= 10 && validSeconds > 0 ? Math.ceil(validSeconds) : null)
+      setActiveMilestone(null)
+      isScrubbingRef.current = false
+      scrubbedFractionRef.current = null
+      setMilestones(DEFAULT_MILESTONES.map((m) => ({ ...m, announced: false })))
+      setStatus(playImmediately ? 'active' : 'paused')
+    },
+    [config.initialOrbitalAngle]
+  )
+
   const clearActiveMilestone = useCallback(() => {
     setActiveMilestone(null)
   }, [])
@@ -363,6 +391,7 @@ export function useMissionTimer(config: MissionConfig) {
     setLaunchStatus,
     scrubFraction,
     clearActiveMilestone,
+    setManualTimer,
     phases,
     milestones,
   }

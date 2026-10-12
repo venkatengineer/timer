@@ -6,6 +6,7 @@ import { MissionCockpit } from './components/ui/MissionCockpit'
 import { FinalMinuteOverlay } from './components/ui/FinalMinuteOverlay'
 import { MilestoneToast } from './components/ui/MilestoneToast'
 import { OrganizerModal } from './components/ui/OrganizerModal'
+import { ManualTimerModal } from './components/ui/ManualTimerModal'
 import { LoginScreen } from './components/ui/LoginScreen'
 import { useMissionTimer } from './hooks/useMissionTimer'
 import { useSoundEffects } from './hooks/useSoundEffects'
@@ -35,6 +36,7 @@ const AUTH_STORAGE_KEY = 'seds_lunar_clock_auth_state_v1'
 export const App: React.FC = () => {
   const [config, setConfig] = useState<MissionConfig>(DEFAULT_CONFIG)
   const [isOrganizerOpen, setIsOrganizerOpen] = useState(false)
+  const [isManualTimerOpen, setIsManualTimerOpen] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     try {
       return localStorage.getItem(AUTH_STORAGE_KEY) === 'granted'
@@ -57,6 +59,7 @@ export const App: React.FC = () => {
     resetMission,
     scrubFraction,
     clearActiveMilestone,
+    setManualTimer,
     phases,
   } = useMissionTimer(config)
 
@@ -66,6 +69,34 @@ export const App: React.FC = () => {
     sounds.playMissionActive()
     startMission()
   }, [sounds, startMission])
+
+  // Manual Timer Setting: "Later play it goes to main screen"
+  const handleSetAndPlayManualTimer = useCallback((seconds: number) => {
+    sounds.initAudio()
+    sounds.playMissionActive()
+    setConfig((prev) => ({ ...prev, totalDurationSeconds: seconds }))
+    setManualTimer(seconds, true)
+    setIsAuthenticated(true)
+    try {
+      localStorage.setItem(AUTH_STORAGE_KEY, 'granted')
+    } catch {
+      // storage unavailable
+    }
+    setIsManualTimerOpen(false)
+  }, [sounds, setManualTimer])
+
+  const handleSetAndPauseManualTimer = useCallback((seconds: number) => {
+    sounds.initAudio()
+    setConfig((prev) => ({ ...prev, totalDurationSeconds: seconds }))
+    setManualTimer(seconds, false)
+    setIsAuthenticated(true)
+    try {
+      localStorage.setItem(AUTH_STORAGE_KEY, 'granted')
+    } catch {
+      // storage unavailable
+    }
+    setIsManualTimerOpen(false)
+  }, [sounds, setManualTimer])
 
   const handleTogglePause = useCallback(() => {
     if (timerState.status === 'active') {
@@ -107,11 +138,12 @@ export const App: React.FC = () => {
     }
   }, [])
 
-  // Keyboard shortcuts (O, M, Space, F)
+  // Keyboard shortcuts (O, M, Space, F, and Ctrl+A / Cmd+A)
   useKeyboardShortcuts({
     onToggleOrganizer: handleToggleOrganizer,
     onToggleSound: handleToggleSound,
     onTogglePause: handleTogglePause,
+    onOpenManualTimer: () => setIsManualTimerOpen(true),
   })
 
   return (
@@ -142,6 +174,7 @@ export const App: React.FC = () => {
           config={config}
           onInitiateMission={handleInitiateMission}
           onOpenOrganizer={() => setIsOrganizerOpen(true)}
+          onOpenManualTimer={() => setIsManualTimerOpen(true)}
           onLogout={handleLogout}
         />
       )}
@@ -158,6 +191,7 @@ export const App: React.FC = () => {
             onToggleSound={handleToggleSound}
             onTogglePause={handleTogglePause}
             onOpenOrganizer={() => setIsOrganizerOpen(true)}
+            onOpenManualTimer={() => setIsManualTimerOpen(true)}
             onLogout={handleLogout}
           />
 
@@ -185,6 +219,15 @@ export const App: React.FC = () => {
           />
         </>
       )}
+
+      {/* Manual Timer Modal (Triggered by Ctrl+A or Header Button) */}
+      <ManualTimerModal
+        isOpen={isManualTimerOpen}
+        onClose={() => setIsManualTimerOpen(false)}
+        onSetAndPlay={handleSetAndPlayManualTimer}
+        onSetAndPause={handleSetAndPauseManualTimer}
+        initialSeconds={timerState.remainingSeconds || config.totalDurationSeconds}
+      />
 
       {/* Organizer Control Panel Modal */}
       <OrganizerModal

@@ -10,6 +10,7 @@ import {
   Play,
   LogOut,
   RotateCw,
+  Clock,
 } from 'lucide-react'
 import type { MissionStatus } from '../../types/mission'
 
@@ -19,6 +20,7 @@ interface MissionHeaderProps {
   onToggleSound: () => void
   onTogglePause: () => void
   onOpenOrganizer: () => void
+  onOpenManualTimer?: () => void
   onLogout?: () => void
 }
 
@@ -28,6 +30,7 @@ export const MissionHeader: React.FC<MissionHeaderProps> = ({
   onToggleSound,
   onTogglePause,
   onOpenOrganizer,
+  onOpenManualTimer,
   onLogout,
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -168,6 +171,19 @@ export const MissionHeader: React.FC<MissionHeaderProps> = ({
             <VolumeX className="w-4 h-4" />
           )}
         </button>
+
+        {/* Manual Timer [Ctrl+A] Button */}
+        {onOpenManualTimer && (
+          <button
+            onClick={onOpenManualTimer}
+            className="flex items-center space-x-1.5 px-2.5 py-2 rounded-lg bg-[#100B20]/80 border border-[#A78BFA]/40 hover:border-[#A78BFA] text-[#C4B5FD] text-xs font-mono transition-all cursor-pointer shadow-[0_0_15px_rgba(167,139,250,0.15)]"
+            title="Set Custom Timer [Ctrl+A]"
+          >
+            <Clock className="w-3.5 h-3.5 text-[#6DADEB]" />
+            <span className="hidden sm:inline">SET TIMER</span>
+            <span className="text-[10px] bg-[#A78BFA]/20 px-1 py-0.2 rounded text-[#A78BFA] hidden md:inline">^A</span>
+          </button>
+        )}
 
         {/* Refresh Button */}
         <button
